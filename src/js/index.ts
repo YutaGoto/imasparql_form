@@ -7,6 +7,7 @@
   function buildQuery(select: string, where: string) {
     return [
       "PREFIX schema: <http://schema.org/>",
+      "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
       "PREFIX imas: <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#>",
       "SELECT (", select, ")",
       "WHERE {", where, "}",
@@ -44,7 +45,7 @@
     const dateQuery = birthDate['month'] + '-' + birthDate['day'];
     const Query = buildQuery(
       "sample(?n) as ?name",
-      "?sub schema:birthDate ?o; schema:name|schema:alternateName ?n;FILTER(regex(str(?o), '" + dateQuery + "' ))."
+      "?sub schema:birthDate ?o; schema:name ?n;FILTER(regex(str(?o), '" + dateQuery + "' ))."
     ) + "group by(?n)";
     const url = 'https://sparql.crssnky.xyz/spql/imas/query?query=' + encodeURIComponent(Query);
     getRequest(url, 'birthdayIdols');
@@ -67,7 +68,7 @@
     }
     const Query = buildQuery(
       "sample(?n) as ?name",
-      "?s schema:name|imas:nameKana ?on; schema:name ?n; FILTER(CONTAINS(str(?on), '" + nameLike + "'))."
+      "?s rdf:type imas:Idol; schema:name|imas:nameKana ?on; schema:name ?n; FILTER(CONTAINS(str(?on), '" + nameLike + "'))."
     ) + "group by(?n)";
     const url = 'https://sparql.crssnky.xyz/spql/imas/query?query=' + encodeURIComponent(Query);
     getRequest(url, 'nameLikeIdols');
