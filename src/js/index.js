@@ -1,29 +1,31 @@
 (function () {
-    function buildQuery(select, where) {
-        return [
-            "PREFIX schema: <http://schema.org/>",
-            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
-            "PREFIX imas: <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#>",
-            "SELECT (", select, ")",
-            "WHERE {", where, "}",
-        ].join('');
-    }
-    function getRequest(url, targetOutputId) {
-        const request = new XMLHttpRequest();
-        request.open("GET", url);
-        request.addEventListener("load", (event) => {
-            const response = JSON.parse(event.target['response']);
-            const idolArray = response['results']['bindings'].map(function (e) {
-                if (Object.keys(e).length) {
-                    return e['name']['value'];
-                }
-                else {
-                    return 'いません';
-                }
+    class SparqlForm {
+        buildQuery(select, where) {
+            return [
+                "PREFIX schema: <http://schema.org/>",
+                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+                "PREFIX imas: <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#>",
+                "SELECT (", select, ")",
+                "WHERE {", where, "}",
+            ].join('');
+        }
+        getRequest(url, targetOutputId) {
+            const request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.addEventListener("load", (event) => {
+                const response = JSON.parse(event.target['response']);
+                const idolArray = response['results']['bindings'].map(function (e) {
+                    if (Object.keys(e).length) {
+                        return e['name']['value'];
+                    }
+                    else {
+                        return 'いません';
+                    }
+                });
+                document.getElementById(targetOutputId).innerHTML = idolArray.join(', ');
             });
-            document.getElementById(targetOutputId).innerHTML = idolArray.join(', ');
-        });
-        request.send();
+            request.send();
+        }
     }
     function to2Length(str) {
         if (str.length === 1) {
@@ -33,13 +35,14 @@
             return str;
         }
     }
+    let sparqlForm = new SparqlForm();
     function searchBirthdayIdols(birthDate) {
         birthDate['month'] = to2Length(birthDate['month']);
         birthDate['day'] = to2Length(birthDate['day']);
         const dateQuery = birthDate['month'] + '-' + birthDate['day'];
-        const Query = buildQuery("sample(?n) as ?name", "?sub schema:birthDate ?o; schema:name ?n;FILTER(regex(str(?o), '" + dateQuery + "' )).") + "group by(?n)";
+        const Query = sparqlForm.buildQuery("sample(?n) as ?name", "?sub schema:birthDate ?o; schema:name ?n;FILTER(regex(str(?o), '" + dateQuery + "' )).") + "group by(?n)";
         const url = 'https://sparql.crssnky.xyz/spql/imas/query?query=' + encodeURIComponent(Query);
-        getRequest(url, 'birthdayIdols');
+        sparqlForm.getRequest(url, 'birthdayIdols');
     }
     document.getElementById('birthdaySearch').addEventListener('click', (e) => {
         const monthElement = document.getElementById('month');
@@ -54,10 +57,9 @@
         if (nameLike === "") {
             nameLike = "　　";
         }
-        const Query = buildQuery("sample(?n) as ?name", "?s rdf:type imas:Idol; schema:name|imas:nameKana ?on; schema:name ?n; FILTER(CONTAINS(str(?on), '" + nameLike + "')).") + "group by(?n)";
-        console.log(Query);
+        const Query = sparqlForm.buildQuery("sample(?n) as ?name", "?s rdf:type imas:Idol; schema:name|imas:nameKana ?on; schema:name ?n; FILTER(CONTAINS(str(?on), '" + nameLike + "')).") + "group by(?n)";
         const url = 'https://sparql.crssnky.xyz/spql/imas/query?query=' + encodeURIComponent(Query);
-        getRequest(url, 'nameLikeIdols');
+        sparqlForm.getRequest(url, 'nameLikeIdols');
     }
     document.getElementById('likeSearch').addEventListener('click', (e) => {
         const nameLikeElement = document.getElementById('nameLike');
