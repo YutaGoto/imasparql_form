@@ -4,7 +4,7 @@
         "module": "system",
         "rootDir": ".",
         "outDir": ".",
-        "sourceMap": true
+        "sourceMap": true,
     },
     "exclude": [
         "node_modules",
