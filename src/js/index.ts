@@ -54,65 +54,64 @@
         {value: "沖縄", name: "沖縄"},
     ];
 
-
     class SparqlForm {
-        public buildQuery(select: string, where: string) {
+        public buildQuery(select: string, where: string): string {
             return [
                 "PREFIX schema: <http://schema.org/>",
                 "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
                 "PREFIX imas: <https://sparql.crssnky.xyz/imasrdf/URIs/imas-schema.ttl#>",
                 "SELECT (", select, ")",
                 "WHERE {", where, "}",
-            ].join('');
+            ].join("");
         }
 
-        public sparqlSearch(query: string, htmlId: string) {
-            const url = 'https://sparql.crssnky.xyz/spql/imas/query?query=' + encodeURIComponent(query);
+        public sparqlSearch(query: string, htmlId: string): void {
+            const url = "https://sparql.crssnky.xyz/spql/imas/query?query=" + encodeURIComponent(query);
             this.getRequest(url, htmlId);
         }
 
-        private getRequest(url: string, targetOutputId: string) {
+        private getRequest(url: string, targetOutputId: string): void {
             const request = new XMLHttpRequest();
             request.open("GET", url);
             request.addEventListener("load", (event) => {
-                const response =    JSON.parse(event.target['response']);
-                const idolArray = response['results']['bindings'].map(function(e) {
-                    if (Object.keys(e).length){
-                        return e['name']['value'];
+                const response = JSON.parse(event.target["response"]);
+                const idolArray = response["results"]["bindings"].map(function(e) {
+                    if (Object.keys(e).length) {
+                        return e["name"]["value"];
                     } else {
-                        return 'いません';
+                        return "いません";
                     }
                 });
-                document.getElementById(targetOutputId).innerHTML = idolArray.join(', ');
+                document.getElementById(targetOutputId).innerHTML = idolArray.join(", ");
             });
             request.send();
         }
     }
 
-    function to2Length(str: string) {
+    function to2Length(str: string): string {
         if (str.length === 1) {
-            return '0' + str;
+            return "0" + str;
         } else {
             return str;
         }
     }
 
-    let sparqlForm = new SparqlForm();
+    const sparqlForm = new SparqlForm();
 
-    function searchBirthdayIdols(birthDate: BirthDate) {
-        birthDate['month'] = to2Length(birthDate['month']);
-        birthDate['day'] = to2Length(birthDate['day']);
-        const dateQuery = birthDate['month'] + '-' + birthDate['day'];
+    function searchBirthdayIdols(birthDate: BirthDate): void {
+        birthDate["month"] = to2Length(birthDate["month"]);
+        birthDate["day"] = to2Length(birthDate["day"]);
+        const dateQuery = birthDate["month"] + "-" + birthDate["day"];
         const Query = sparqlForm.buildQuery(
             "sample(?n) as ?name",
-            "?sub schema:birthDate ?o; schema:name ?n;FILTER(regex(str(?o), '" + dateQuery + "' ))."
+            "?sub schema:birthDate ?o; schema:name ?n;FILTER(regex(str(?o), '" + dateQuery + "' )).",
         ) + "group by(?n)";
-        sparqlForm.sparqlSearch(Query, 'birthdayIdols');
+        sparqlForm.sparqlSearch(Query, "birthdayIdols");
     }
 
-    document.getElementById('birthdaySearch').addEventListener('click', (e) => {
-        const monthElement: HTMLInputElement =<HTMLInputElement>document.getElementById('month');
-        const dayElement: HTMLInputElement =<HTMLInputElement>document.getElementById('day');
+    document.getElementById("birthdaySearch").addEventListener("click", () => {
+        const monthElement: HTMLInputElement = document.getElementById("month") as HTMLInputElement;
+        const dayElement: HTMLInputElement = document.getElementById("day") as HTMLInputElement;
         const searchDate = {
             month: monthElement.value,
             day: dayElement.value
@@ -121,43 +120,43 @@
         searchBirthdayIdols(searchDate);
     }, false);
 
-    function searchNameIdols(nameLike: string) {
+    function searchNameIdols(nameLike: string): void {
         if (nameLike === "") {
             nameLike = "　　";
         }
         const Query = sparqlForm.buildQuery(
             "sample(?n) as ?name",
-            "?s rdf:type imas:Idol; schema:name|imas:nameKana ?on; schema:name ?n; FILTER(CONTAINS(str(?on), '" + nameLike + "'))."
+            "?s rdf:type imas:Idol; schema:name|imas:nameKana ?on; schema:name ?n; FILTER(CONTAINS(str(?on), '" + nameLike + "')).",
         ) + "group by(?n)";
-        sparqlForm.sparqlSearch(Query, 'nameLikeIdols');
+        sparqlForm.sparqlSearch(Query, "nameLikeIdols");
     }
 
-    document.getElementById('likeSearch').addEventListener('click', (e) => {
-        const nameLikeElement: HTMLInputElement = <HTMLInputElement>document.getElementById('nameLike');
+    document.getElementById("likeSearch").addEventListener("click", () => {
+        const nameLikeElement: HTMLInputElement = document.getElementById("nameLike") as HTMLInputElement;
         const nameLike = nameLikeElement.value;
         searchNameIdols(nameLike);
     }, false);
 
-    function searchBirthPlace(prefecture: string) {
+    function searchBirthPlace(prefecture: string): void {
         if (prefecture === "") {
             prefecture = "　";
         }
 
         const Query = sparqlForm.buildQuery(
             "sample(?n) as ?name",
-            "?s rdf:type imas:Idol; schema:birthPlace ?bp; schema:name ?n; FILTER(CONTAINS(str(?bp), '" + prefecture + "'))."
+            "?s rdf:type imas:Idol; schema:birthPlace ?bp; schema:name ?n; FILTER(CONTAINS(str(?bp), '" + prefecture + "')).",
         ) + "group by(?n)";
-        sparqlForm.sparqlSearch(Query, 'birthPlaceIdols');
+        sparqlForm.sparqlSearch(Query, "birthPlaceIdols");
     }
 
-    document.getElementById('prefectureSearch').addEventListener('click', (e) => {
-        const prefectureElement: HTMLInputElement = <HTMLInputElement>document.getElementById('prefecture');
+    document.getElementById("prefectureSearch").addEventListener("click", () => {
+        const prefectureElement: HTMLInputElement = document.getElementById("prefecture") as HTMLInputElement;
         const prefecture = prefectureElement.value;
         searchBirthPlace(prefecture);
     }, false);
 
-    function buildPrefecturesSelect(prefectures) {
-        const prefectureElement: HTMLInputElement = <HTMLInputElement>document.getElementById('prefecture');
+    function buildPrefecturesSelect(prefectures): void {
+        const prefectureElement: HTMLInputElement = document.getElementById('prefecture') as HTMLInputElement;
 
         let selectHtml = "";
         prefectures.forEach(function(prefecture) {
