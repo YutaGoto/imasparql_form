@@ -1,5 +1,7 @@
 # imasparql_form
 
+[![CircleCI](https://circleci.com/gh/YutaGoto/imasparql_form.svg?style=svg)](https://circleci.com/gh/YutaGoto/imasparql_form)
+
 ```sh
 npm run tsc
 ```
