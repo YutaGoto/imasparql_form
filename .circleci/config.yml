@@ -12,18 +12,18 @@ executors:
 
 jobs:
   lint:
+    executor: docker-exec
+    working_directory: ~/imasparql_form
     steps:
-      executor: docker-exec
-      working_directory: ~/imasparql_form
       - checkout
       - restore_cache:
-        keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
       - run: npm install
       - run:
-        name: eslint
-        command: npm run eslint
+          name: eslint
+          command: npm run eslint
       - save_cache:
           paths:
             - node_modules
